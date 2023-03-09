@@ -291,7 +291,7 @@ class OrderController extends Controller
                             //     'message' => 'Payment Received Successfully !!',
                             //     'redirect' => 'order-history',
                             // ]);
-                            return redirect('order-summery');
+                            return redirect('order-summery/'.$order->id);
                         else:
                             return response()->json([
                                 'status' => false,
