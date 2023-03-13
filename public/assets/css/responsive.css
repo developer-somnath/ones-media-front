@@ -1,0 +1,78 @@
+
+@media only screen and (min-width:200px) and (max-width:767px) {
+    .header-info {
+        justify-content: center;
+        flex-direction: column;
+    }
+    .header-info ul {
+        display: flex;
+        justify-content: center;
+    }
+	.stellarnav.light.right.mobile {
+    text-align: right;
+}
+	.stellarnav.mobile.right > ul {
+    z-index: 99;
+}
+	.stellarnav > ul > li > a:hover {
+    color: #f78f1e !important;
+}
+.banner-content h1 {
+    font-size: 26px;
+}
+.banner-content h2 {
+    font-size: 21px;
+}
+.page-title h2 {
+    font-size: 23px;
+}
+.category-box {
+    margin-bottom: 30px;
+}
+.client-img img {
+    height: auto;
+}
+.header-info ul:last-child {
+    flex-direction: column;
+    justify-content: center;
+    text-align: center;
+}
+.main-header.sticky {
+    position: relative;
+}
+}
+
+
+@media only screen and (min-width:768px) and (max-width:991px) {
+	.stellarnav.light.right.mobile {
+    text-align: right;
+}
+	.stellarnav.mobile.right > ul {
+    z-index: 99;
+}
+.banner-content h1 {
+    font-size: 27px;
+}
+.banner-content h2 {
+    font-size: 29px;
+}
+.category-box {
+    margin-bottom: 30px;
+}
+}
+@media only screen and (min-width:992px) and (max-width:1199px) {
+.stellarnav > ul > li > a {
+    font-size: 12px;
+    padding: 16px 7px;
+}
+
+}
+
+
+
+	
+/********************@media only screen and (min-width:1201px)********************/
+
+	
+
+/********************@media only screen and (min-width:1201px)********************/
