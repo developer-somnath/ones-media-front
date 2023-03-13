@@ -1,3 +1,98 @@
+@php
+    $sample_file = DB::table('sample_files')
+        ->where(
+            'status',
+            '<>
+',
+            1,
+        )
+        ->first();
+    $currentDate = date('Y-m-d');
+    $applicableShows = explode(',', $checkSalesToday?->applicable_shows);
+    // \DB::enableQueryLog();
+    $applicableCategoryToShow = [];
+    if (!is_null($checkSalesDateRange)):
+        $applicableCategoryToShow = \DB::table('shows')
+            ->selectRaw('GROUP_CONCAT("",id) AS applicableShows')
+            ->whereIn('category_id', explode(',', $checkSalesDateRange?->applicable_categories))
+            ->pluck('applicableShows')
+            ->first();
+        $applicableCategoryToShow = explode(',', $applicableCategoryToShow);
+    endif;
+    $flag = 0;
+    $flag1 = 0;
+    if (!empty($applicableCategoryToShow) && in_array($productViewList->id, $applicableCategoryToShow)):
+        $flag = 1;
+    endif;
+    if (!empty($applicableShows) && in_array($productViewList->id, $applicableShows)):
+        $flag1 = 1;
+    endif;
+    
+    if (!empty($productViewList->instant_download_price)) {
+        if ($flag == 1) {
+            if ($flag1 == '1') {
+                if ($checkSalesToday?->discount_type === 'P') {
+                    $discountVal = ((float) $productViewList->instant_download_price * (float) $checkSalesToday?->discount_amount) / 100;
+                    $instantpriceDetails = (float) $productViewList->instant_download_price - (float) $discountVal;
+                } elseif ($checkSalesToday?->discount_type === 'F') {
+                    $discountVal = (float) $checkSalesToday?->discount_amount;
+                    $instantpriceDetails = (float) $productViewList->instant_download_price - (float) $discountVal;
+                }
+    
+                $instantprice = number_format($instantpriceDetails, 2);
+            } else {
+                if ($productViewList->instant_download_price >= $checkSalesDateRange?->min_price_range && $productViewList->instant_download_price <= $checkSalesDateRange?->max_price_range) {
+                    if ($checkSalesDateRange?->discount_type === 'P') {
+                        $discountVal = ((float) $productViewList->instant_download_price * (float) $checkSalesDateRange?->discount_amount) / 100;
+    
+                        $instantpriceDetails = (float) $productViewList->instant_download_price - (float) $discountVal;
+                    } elseif ($checkSalesDateRange?->discount_type === 'F') {
+                        $discountVal = (float) $checkSalesDateRange?->discount_amount;
+                        $instantpriceDetails = (float) $productViewList->instant_download_price - (float) $discountVal;
+                    }
+                    $instantprice = number_format($instantpriceDetails, 2);
+                } else {
+                    $instantprice = $productViewList->instant_download_price;
+                }
+            }
+        } else {
+            $instantprice = $productViewList->instant_download_price;
+        }
+    }
+    if (!empty($productViewList->mp3_cd_price)) {
+        if ($flag == 1) {
+            if ($flag1 == '1') {
+                if ($checkSalesToday?->discount_type === 'P') {
+                    $discountVal = ((float) $productViewList->mp3_cd_price * (float) $checkSalesToday?->discount_amount) / 100;
+                    $mpthreepriceDetails = (float) $productViewList->mp3_cd_price - (float) $discountVal;
+                } elseif ($checkSalesToday?->discount_type === 'F') {
+                    $discountVal = (float) $checkSalesToday?->discount_amount;
+                    $mpthreepriceDetails = (float) $productViewList->mp3_cd_price - (float) $discountVal;
+                }
+    
+                $mpthreeprice = number_format($mpthreepriceDetails, 2);
+            } else {
+                if ($productViewList->mp3_cd_price >= $checkSalesDateRange?->min_price_range && $productViewList->mp3_cd_price <= $checkSalesDateRange?->max_price_range) {
+                    if ($checkSalesDateRange?->discount_type === 'P') {
+                        $discountVal = ((float) $productViewList->mp3_cd_price * (float) $checkSalesDateRange?->discount_amount) / 100;
+    
+                        $mpthreepriceDetails = (float) $productViewList->mp3_cd_price - (float) $discountVal;
+                    } elseif ($checkSalesDateRange?->discount_type === 'F') {
+                        $discountVal = (float) $checkSalesDateRange?->discount_amount;
+                        $mpthreepriceDetails = (float) $productViewList->mp3_cd_price - (float) $discountVal;
+                    }
+                    $mpthreeprice = number_format($mpthreepriceDetails, 2);
+                } else {
+                    $mpthreeprice = $productViewList->mp3_cd_price;
+                }
+            }
+        } else {
+            $mpthreeprice = $productViewList->mp3_cd_price;
+        }
+    
+        //dd($mpthreeprice);
+    }
+@endphp
 @extends('layouts.master')
 @section('content')
     <div class="container">
@@ -36,29 +131,53 @@
                             <b>
                                 Choose your CD format
                                 or order disks individually:</b>
-                            <select class="form-control w-75 mt-2">
-                                <option>MP3 CD: sample collection - $5</option>
-                                <option>Audio CD: Disc A001- $5</option>
-                                <option>Audio CD: Disc A001- $5</option>
-                                <option>Audio CD: Disc A001- $5</option>
+                            <select class="form-control w-75 mt-2 cd">
+                                <option value="instant_download">Instant Download -
+                                    ${{ $instantprice }}</option>
+                                <option value="mp3_cd">Mp3 Cd-
+                                    ${{ $mpthreeprice }}</option>
                             </select>
                         </div>
                         <div>
-                            <a href="javascript:void(0)" class="t-add addToCart"  data-id="{{ $productViewList->id }}">Add to Cart</a>
+                            <a href="javascript:void(0)" class="t-add addToCart" data-id="{{ $productViewList->id }}">Add
+                                to Cart</a>
                             @auth
-                                <a href="javascript:void(0)" class="wishlist-add addToWishlist"  data-id="{{ $productViewList->id }}">Add to wishlist</a>
+                                <a href="javascript:void(0)" class="wishlist-add addToWishlist"
+                                    data-id="{{ $productViewList->id }}">Add to wishlist</a>
                             @endauth
                             @guest
-                                <a href="{{ url('/login') }}" class="wishlist-add"  data-id="{{ $productViewList->id }}">Add to wishlist</a>
+                                <a href="{{ url('/login') }}" class="wishlist-add" data-id="{{ $productViewList->id }}">Add to
+                                    wishlist</a>
                             @endguest
-                             
+                            <br><br>
+                            @if(!is_null($sample_file))
+                            <audio controls>
+                                <source src="{{ env('IMAGE_URL') }}uploads/sample-files/{{ $sample_file->file_name }}"
+                                    type="audio/ogg">
+                                <source src="{{ env('IMAGE_URL') }}uploads/sample-files/{{ $sample_file->file_name }}"
+                                    type="audio/mpeg">
+                                Your browser does not support the audio element.
+                            </audio>
+                            @endif
+
+
+
+                            {{--  <div class="popular-box-container">  --}}
+
+                            {{--  </div>
+                            <h3>{{ $sample_file->title }}</h3>  --}}
+
+                            </a>
+
                         </div>
+
                     </div>
                 </div>
             </div>
-            <div class="product-description mt-5">
-				{{ isset($productViewList)?strip_tags($productViewList->description):'---' }}
-               {{--   <div class="row">
+        </div>
+        <div class="product-description mt-5">
+            {{ isset($productViewList) ? strip_tags($productViewList->description) : '---' }}
+            {{--   <div class="row">
                     <div class="col-md-3">
                         <img src="assets/img/navy.jpg">
                     </div>
@@ -86,8 +205,8 @@
                             PageMaker including versions of Lorem Ipsum.</p>
                     </div>
                 </div>  --}}
-            </div>
         </div>
+    </div>
     </div>
 
 @stop

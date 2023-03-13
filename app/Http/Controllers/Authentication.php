@@ -9,6 +9,8 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Session;
+use App\Mail\Mailer;
+use Mail;
 
 class Authentication extends Controller
 {
@@ -74,15 +76,16 @@ class Authentication extends Controller
                     "zip_code" => $request->input('zip_code'),
 
                 ]);
-                /*  This section will be open when the .env flie is modified with correct smtp credentials
                 $mailDetails = [
-                'email' => $request->input('email'),
-                'subject' => 'Welcome to' . env('APP_NAME'),
+                'email' => $request->input('user_email'),
+                'subject' => 'Welcome to' .' '. env('APP_NAME'),
                 'html' => 'emails.customer-registration',
                 'userName' => $request->input('first_name').' '.$request->input('last_name'),
-                'password' => $request->input('password'),
+                'password' => $request->input('user_password'),
                 ];
-                Mail::to($request->input('email'))->send(new Mailer($mailDetails)); */
+                // dd($mailDetails);
+                Mail::to($request->input('user_email'))->send(new Mailer($mailDetails));
+            
 
                 return response()->json([
                     'status' => true,

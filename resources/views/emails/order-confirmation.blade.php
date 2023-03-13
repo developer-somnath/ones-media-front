@@ -22,9 +22,9 @@
                    <br>
                    <p>
                     Welcome to <b>{{env('APP_NAME')}}</b><br/><br/>
-                    Your Profile Created Successfully,after login please change your credentials.<br>
-                     <b>Email:{{$email}}</b><br>
-                     <b>Password:{{$password}}</b>
+                    Your Order has been placed Successfully,We have received your order and contact you soon .<br><br>
+                     <b>Order Number : {{$order_no}}</b><br>
+                     <b>Order Total : ${{$all_total}}</b>
                    </p>
 				    <br><br>
 				    <p>Thank you,</p>

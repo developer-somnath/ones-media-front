@@ -21,12 +21,13 @@
                     <h2>Most Popular {{ $title ? ucfirst($title) : '' }} Shows</h2>
                 </div>
                 <div class="row">
-                    @forelse ($productList as $product)
+                    @forelse ($productListPopular as $product)
                         <div class="col-md-4">
                             <div class="popular-box">
                                 <a href="{{ url('show/details/' . $product->id) }}">
                                     <div class="popular-box-container">
-                                        <img src="{{ asset('assets/img/PatNovak.png') }}">
+                                        <img
+                                            src="{{ env('IMAGE_URL') }}uploads/categories/{{ $product->categorySlug }}/{{ $product->image }}">
                                     </div>
                                     <h3>{{ ucfirst($product->title) }}</h3>
                                 </a>

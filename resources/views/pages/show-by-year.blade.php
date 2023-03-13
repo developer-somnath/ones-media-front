@@ -16,35 +16,7 @@
 
     <div class="main-part-home">
         <div class="container">
-            <div>
-                <div class="page-title">
-                    <h2>Most Popular {{ $title ? $title : '' }} Shows</h2>
-                </div>
-                <div class="row">
-                    @forelse ($productList as $product)
-                        <div class="col-md-4">
-                            <div class="popular-box">
-                                <a href="{{ url('show/details/' . $product->id) }}">
-                                    <div class="popular-box-container">
-                                        <img src="{{ asset('assets/img/PatNovak.png') }}">
-                                    </div>
-                                    <h3>{{ ucfirst($product->title) }}</h3>
-                                </a>
-                            </div>
-                        </div>
-                    @empty
-                        <div class="col-md-12">
-                            <div class="popular-box">
-                                <a href="product-details.html">
-
-                                    <h3>No Data Found !!</h3>
-                                </a>
-                            </div>
-                        </div>
-                    @endforelse
-
-                </div>
-            </div>
+           
             <div>
                 <div class="page-title">
                     <h2>All {{ $title ? $title : '' }} Shows</h2>
@@ -149,7 +121,7 @@
                                     </td>
                                     <td>
                                         <div class="list-p-title">
-                                            <h3>{{ $product->show_year }}</h3>
+                                            <h3>{{ !empty($product->show_start_year)?$product->show_start_year:'' }}</h3>
                                         </div>
                                     </td>
                                     <td>

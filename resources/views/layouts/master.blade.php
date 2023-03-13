@@ -170,13 +170,16 @@
                             <h3>Importants Links</h3>
                             <ul class="links-list">
                                 <li>
+                                    <a href="{{ url('/terms-conditions') }}">Terms & Conditions</a>
+                                </li>
+                                <li>
                                     <a href="#">Shipping Policy</a>
                                 </li>
                                 <li>
                                     <a href="#">Return Policy</a>
                                 </li>
                                 <li>
-                                    <a href="#">Privacy Policy</a>
+                                    <a href="{{ url('/privacy-policy') }}">Privacy Policy</a>
                                 </li>
                                 <li>
                                     <a href="#">Payment Methods</a>
@@ -198,7 +201,7 @@
                                     <a href="{{ url('/') }}">Home</a>
                                 </li>
                                 <li>
-                                    <a href="#">About Us</a>
+                                    <a href="{{ url('/about-us') }}">About Us</a>
                                 </li>
                                 <li>
                                     <a href="{{ url('/shows-all') }}">Shop</a>

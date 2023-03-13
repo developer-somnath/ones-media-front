@@ -32,6 +32,9 @@ Route::match(['get', 'post'], '/update-cart-quantity', [Home::class, 'updateCart
 Route::post('/remove-from-cart', [Home::class, 'removeFromCart'])->name('remove.from.cart');
 /* Route::match(['get', 'post'], '/update-cart-quantity', [Dashboard::class, 'index'])->name('update-my-cart-quantity'); */
 Route::post('/filter-by-cart', [Home::class, 'filterByCart'])->name('filter.by.cart');
+Route::get('/about-us', [Home::class, 'aboutUs'])->name('about-us');
+Route::get('/terms-conditions', [Home::class, 'termsConditions'])->name('terms-conditions');
+Route::get('/privacy-policy', [Home::class, 'privacyPolicy'])->name('privacy-policy');
 
 Route::get('login', [Authentication::class, 'login'])->name('login');
 Route::match(['get', 'post'],'register', [Authentication::class, 'register'])->name('signup');
@@ -48,6 +51,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/add-to-wishlist', [Home::class, 'addToWishlist'])->name('add.to.wishlist');
     Route::post('/add-sampleFile-to-cart', [Home::class, 'addSampleFileToCart'])->name('add.sample.file.to.cart');
     Route::post('/add-to-cart-from-wishlist', [Home::class, 'addToCartFromWishlist'])->name('add.to.cart.wishlist');
+    Route::post('/remove-from-wishlist', [Home::class, 'removeFromWishlist'])->name('remove.from.wishlist');
     Route::post('/filter-by-my-cart', [Home::class, 'filterByMyCart'])->name('filter.by.my.cart');
     Route::post('generic-status-change-delete', [Authenticate::class, 'genericStatusChange'])->name('generic-status-change-delete');
     Route::get('/my-cart', [Authentication::class, 'myCart'])->name('my-cart');

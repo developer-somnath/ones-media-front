@@ -13,16 +13,29 @@
                     <th>Action</th>
                 </thead>
                 <tbody>
+                    @php
+                        $applicableShows = explode(',', $checkSalesToday?->applicable_shows);
+                        // \DB::enableQueryLog();
+                        $applicableCategoryToShow = [];
+                        if (!is_null($checkSalesDateRange)):
+                            $applicableCategoryToShow = \DB::table('shows')
+                                ->selectRaw('GROUP_CONCAT("",id) AS applicableShows')
+                                ->whereIn('category_id', explode(',', $checkSalesDateRange?->applicable_categories))
+                                ->pluck('applicableShows')
+                                ->first();
+                            $applicableCategoryToShow = explode(',', $applicableCategoryToShow);
+                        endif;
+                        
+                    @endphp
                     @forelse ($wishlists as $productall)
                         @php
-                            $currentDate = date('Y-m-d');
-                            $offerCheck = \DB::table('offer_management')
-                                ->selectRaw('`discount_amount`,`type`')
-                                ->whereRaw(' DATE(`start_date`)<="' . $currentDate . '" AND DATE(`end_date`)>="' . $currentDate . '" AND FIND_IN_SET(' . $productall->id . ',`applicable_shows`) AND `status`="1"')
-                                ->first();
                             $flag = 0;
-                            if (!empty($offerCheck)):
+                            $flag1 = 0;
+                            if (!empty($applicableCategoryToShow) && in_array($productall->id, $applicableCategoryToShow)):
                                 $flag = 1;
+                            endif;
+                            if (!empty($applicableShows) && in_array($productall->id, $applicableShows)):
+                                $flag1 = 1;
                             endif;
                         @endphp
                         <tr>
@@ -46,60 +59,114 @@
                                 <div class="list-p-btn">
                                     @if ($productall->type == 1)
                                         @if ($flag == 1)
-                                            @if ($offerCheck->type === '1')
-                                                @php
-                                                    $discountVal = ((float) $productall->show?->instant_download_price * (float) $offerCheck->discount_amount) / 100;
-                                                    $price = (float) $productall->show?->instant_download_price - (float) $discountVal;
-                                                @endphp
-                                            @elseif ($offerCheck->type === '2')
-                                                @php
-                                                    $discountVal = (float) $offerCheck->discount_amount;
-                                                    $price = (float) $productall->show?->instant_download_price - (float) $discountVal;
-                                                @endphp
+                                            @if ($flag1 == 1)
+                                                @if ($checkSalesToday?->discount_type === 'P')
+                                                    @php
+                                                        $discountVal = ((float) $productall->show?->instant_download_price * (float) $checkSalesToday?->discount_amount) / 100;
+                                                        $price = (float) $productall->show?->instant_download_price - (float) $discountVal;
+                                                    @endphp
+                                                @elseif ($checkSalesToday?->discount_type === 'F')
+                                                    @php
+                                                        $price = (float) $productall->show?->instant_download_price - (float) $checkSalesToday?->discount_amount;
+                                                    @endphp
+                                                @endif
+                                                <span> ${{ number_format($price, 2) }}</span>
+                                            @else
+                                                @if (
+                                                    $productall->show?->instant_download_price >= $checkSalesDateRange?->min_price_range &&
+                                                        $productall->show?->instant_download_price <= $checkSalesDateRange?->max_price_range)
+                                                    @if ($checkSalesDateRange?->discount_type === 'P')
+                                                        @php
+                                                            $discountVal = ((float) $productall->show?->instant_download_price * (float) $checkSalesDateRange?->discount_amount) / 100;
+                                                            $price = (float) $productall->show?->instant_download_price - (float) $discountVal;
+                                                        @endphp
+                                                    @elseif ($checkSalesDateRange?->discount_type === 'F')
+                                                        @php
+                                                            $price = (float) $productall->show?->instant_download_price - (float) $checkSalesDateRange?->discount_amount;
+                                                        @endphp
+                                                    @endif
+                                                    <span> ${{ number_format($price, 2) }}</span>
+                                                @else
+                                                    <span>
+                                                        ${{ $productall->show?->instant_download_price }}</span>
+                                                @endif
                                             @endif
-                                            <span> ${{ number_format($price, 2) }}</span><br>
-                                            {{--  <sup>Discount</sup><span> ${{ number_format($discountVal,2) }}</span>  --}}
                                         @else
-                                            <span> ${{ $productall->show?->instant_download_price }}</span><br>
-                                            {{--  <b>Discount</b><span> ${{ number_format(0,2) }}</span>  --}}
+                                            <span> ${{ $productall->show?->instant_download_price }}</span>
                                         @endif
                                     @elseif($productall->type == 2)
                                         @if ($flag == 1)
-                                            @if ($offerCheck->type === '1')
-                                                @php
-                                                    $discountVal = ((float) $productall->show?->mp3_cd_price * (float) $offerCheck->discount_amount) / 100;
-                                                    $price = (float) $productall->show?->mp3_cd_price - (float) $discountVal;
-                                                @endphp
-                                            @elseif ($offerCheck->type === '2')
-                                                @php
-                                                    $discountVal = (float) $offerCheck->discount_amount;
-                                                    $price = (float) $productall->show?->mp3_cd_price - (float) $discountVal;
-                                                @endphp
+                                            @if ($flag1 == 1)
+                                                @if ($checkSalesToday?->discount_type === 'P')
+                                                    @php
+                                                        $discountVal = ((float) $productall->show?->mp3_cd_price * (float) $checkSalesToday?->discount_amount) / 100;
+                                                        $price = (float) $productall->show?->mp3_cd_price - (float) $discountVal;
+                                                    @endphp
+                                                @elseif ($checkSalesToday?->discount_type === 'F')
+                                                    @php
+                                                        $price = (float) $productall->show?->mp3_cd_price - (float) $checkSalesToday?->discount_amount;
+                                                    @endphp
+                                                @endif
+                                                <span> ${{ number_format($price, 2) }}</span>
+                                            @else
+                                                @if (
+                                                    $productall->show?->mp3_cd_price >= $checkSalesDateRange?->min_price_range &&
+                                                        $productall->show?->mp3_cd_price <= $checkSalesDateRange?->max_price_range)
+                                                    @if ($checkSalesDateRange?->discount_type === 'P')
+                                                        @php
+                                                            $discountVal = ((float) $productall->show?->mp3_cd_price * (float) $checkSalesDateRange?->discount_amount) / 100;
+                                                            $price = (float) $productall->show?->mp3_cd_price - (float) $discountVal;
+                                                        @endphp
+                                                    @elseif ($checkSalesDateRange?->discount_type === 'F')
+                                                        @php
+                                                            $price = (float) $productall->show?->mp3_cd_price - (float) $checkSalesDateRange?->discount_amount;
+                                                        @endphp
+                                                    @endif
+                                                    <span> ${{ number_format($price, 2) }}</span>
+                                                @else
+                                                    <span>
+                                                        ${{ $productall->show?->mp3_cd_price }}</span>
+                                                @endif
                                             @endif
-                                            <span> ${{ number_format($price, 2) }}</span>
-                                            {{--  <span> ${{ number_format($discountVal,2) }}</span>  --}}
                                         @else
                                             <span> ${{ $productall->show?->mp3_cd_price }}</span>
-                                            {{--  <span> ${{ number_format(0,2) }}</span>  --}}
                                         @endif
                                     @else
-                                       @if ($flag == 1)
-                                            @if ($offerCheck->type === '1')
-                                                @php
-                                                    $discountVal = ((float) $productall->show?->instant_download_price * (float) $offerCheck->discount_amount) / 100;
-                                                    $price = (float) $productall->show?->instant_download_price - (float) $discountVal;
-                                                @endphp
-                                            @elseif ($offerCheck->type === '2')
-                                                @php
-                                                    $discountVal = (float) $offerCheck->discount_amount;
-                                                    $price = (float) $productall->show?->instant_download_price - (float) $discountVal;
-                                                @endphp
+                                        @if ($flag == 1)
+                                            @if ($flag1 == 1)
+                                                @if ($checkSalesToday?->discount_type === 'P')
+                                                    @php
+                                                        $discountVal = ((float) $productall->show?->instant_download_price * (float) $checkSalesToday?->discount_amount) / 100;
+                                                        $price = (float) $productall->show?->instant_download_price - (float) $discountVal;
+                                                    @endphp
+                                                @elseif ($checkSalesToday?->discount_type === 'F')
+                                                    @php
+                                                        $price = (float) $productall->show?->instant_download_price - (float) $checkSalesToday?->discount_amount;
+                                                    @endphp
+                                                @endif
+                                                <span> ${{ number_format($price, 2) }}</span>
+                                            @else
+                                                @if (
+                                                    $productall->show?->instant_download_price >= $checkSalesDateRange?->min_price_range &&
+                                                        $productall->show?->instant_download_price <= $checkSalesDateRange?->max_price_range)
+                                                    @if ($checkSalesDateRange?->discount_type === 'P')
+                                                        @php
+                                                            $discountVal = ((float) $productall->show?->instant_download_price * (float) $checkSalesDateRange?->discount_amount) / 100;
+                                                            $price = (float) $productall->show?->instant_download_price - (float) $discountVal;
+                                                        @endphp
+                                                    @elseif ($checkSalesDateRange?->discount_type === 'F')
+                                                        @php
+                                                            $price = (float) $productall->show?->instant_download_price - (float) $checkSalesDateRange?->discount_amount;
+                                                        @endphp
+                                                    @endif
+                                                    <span> ${{ number_format($price, 2) }}</span>
+                                                @else
+                                                    <span>
+                                                        ${{ $productall->show?->instant_download_price }}</span>
+                                                @endif
                                             @endif
-                                            <span> ${{ number_format($price, 2) }}</span>
-                                            {{--  <span> ${{ number_format($discountVal,2) }}</span>  --}}
                                         @else
                                             <span> ${{ $productall->show?->instant_download_price }}</span>
-                                            {{--  <span> ${{ number_format(0,2) }}</span>  --}}
                                         @endif
                                     @endif
 
@@ -107,9 +174,10 @@
                             </td>
                             <td>
                                 <div class="list-p-btn">
-                                    <button type="button" class="addToCartFromWishlist" data-type="{{ $productall->type }}" data-id="{{ $productall->item_id }}">Add To
+                                    <button type="button" class="addToCartFromWishlist"
+                                        data-type="{{ $productall->type }}" data-id="{{ $productall->item_id }}">Add To
                                         Cart</button>
-                                    <a href="#" title="Remove" class="close">&times;</a>
+                                    <a href="javascript:void(0)" title="Remove" class="close wishlistRemove"  data-id="{{ $productall->item_id }}">&times;</a>
 
                                 </div>
 

@@ -2,16 +2,19 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Banner;
+use DB;
+use App\Models\Cms;
 use App\Models\Cart;
-use App\Models\Categories;
-use App\Models\FreeDownload;
-use App\Models\OfferManagement;
 use App\Models\Sale;
-use App\Models\SampleFiles;
 use App\Models\Shows;
+use App\Models\Banner;
 use App\Models\Wishlist;
+use App\Models\Categories;
+use App\Models\SampleFiles;
+use App\Models\FreeDownload;
 use Illuminate\Http\Request;
+//use Illuminate\Support\Facades\DB;
+use App\Models\OfferManagement;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
 
@@ -59,9 +62,32 @@ class Home extends Controller
         $bannerList = Banner::selectRaw('banners.*')
             ->where('status', '=', '1')
             ->get();
-        $productListPopular = Shows::selectRaw('shows.*,categories.name as categoryName,categories.slug as categorySlug,categories.status as categoryStatus')
-            ->join('categories', 'categories.id', '=', 'shows.category_id', 'inner')->
-            where('categories.status', '=', '1')->where('shows.status', '=', '1')->orderby('shows.id', 'desc')->take(3)->get();
+        /*  *//* $productListPopular = DB::table('order_has_items')
+        ->join('shows', 'shows.id', '=', 'order_has_items.item_id')
+        ->select('shows.title','shows.id','shows.image','order_has_items.item_id',
+        DB::raw('SUM(order_has_items.quantity) as total'))
+        ->where('order_has_items.product_type','=','1')
+        ->groupBy('shows.id','shows.title','order_has_items.item_id')
+        ->orderBy('total', 'desc')
+        ->limit(3)
+        ->get(); */
+        //dd($topsales);
+
+        $productListPopular = DB::table('shows')
+            ->join('order_has_items', 'shows.id', '=', 'order_has_items.item_id', 'inner')
+            ->join('categories', 'categories.id', '=', 'shows.category_id', 'inner')
+            ->selectRaw('shows.*,categories.name as categoryName,categories.slug as categorySlug,categories.status as categoryStatus,sum(order_has_items.quantity) total,order_has_items.item_id,order_has_items.product_type')
+            ->where('order_has_items.product_type', '=', '1')
+            ->groupBy('shows.id')
+            ->orderBy('total', 'desc')
+            ->take(3)
+            ->get();
+
+        //dd($productListPopular);
+
+        /* $productListPopular = Shows::selectRaw('shows.*,categories.name as categoryName,categories.slug as categorySlug,categories.status as categoryStatus')
+        ->join('categories', 'categories.id', '=', 'shows.category_id', 'inner')->
+        where('categories.status', '=', '1')->where('shows.status', '=', '1')->orderby('shows.id', 'desc')->take(3)->get(); */
         if ($filter) {
             $productListAll = Shows::selectRaw('shows.*,categories.name as categoryName,categories.slug as categorySlug,categories.status as categoryStatus')
                 ->join('categories', 'categories.id', '=', 'shows.category_id', 'inner')->
@@ -90,6 +116,16 @@ class Home extends Controller
         $checkSalesDateRange = Sale::where('type', '2')->whereDate('start_date', '<=', $currentDate)
             ->whereDate('end_date', '>=', $currentDate)->first();
 
+        $productListPopular = DB::table('shows')
+            ->join('order_has_items', 'shows.id', '=', 'order_has_items.item_id', 'inner')
+            ->join('categories', 'categories.id', '=', 'shows.category_id', 'inner')
+            ->selectRaw('shows.*,categories.name as categoryName,categories.slug as categorySlug,categories.status as categoryStatus,sum(order_has_items.quantity) total,order_has_items.item_id,order_has_items.product_type')
+            ->where('order_has_items.product_type', '=', '1')
+            ->groupBy('shows.id')
+            ->orderBy('total', 'desc')
+            ->take(3)
+            ->get();
+
         if ($filter) {
             $productList = Shows::selectRaw('shows.*,categories.name as categoryName,categories.slug as categorySlug,categories.status as categoryStatus')
                 ->join('categories', 'categories.id', '=', 'shows.category_id', 'inner')->
@@ -101,7 +137,7 @@ class Home extends Controller
                 where('categories.status', '=', '1')->where('shows.status', '=', '1')->orderby('shows.id', 'asc')->get();
         }
 
-        return view('pages.shows-all', compact('title', 'productList', 'checkSalesToday', 'checkSalesDateRange'));
+        return view('pages.shows-all', compact('title', 'productList', 'productListPopular', 'checkSalesToday', 'checkSalesDateRange'));
     }
     public function searchAll(Request $request)
     {
@@ -112,7 +148,7 @@ class Home extends Controller
         $checkSalesDateRange = Sale::where('type', '2')->whereDate('start_date', '<=', $currentDate)
             ->whereDate('end_date', '>=', $currentDate)->first();
 
-        if ($q !='') {
+        if ($q != '') {
             $productList = Shows::selectRaw('shows.*,categories.name as categoryName,categories.slug as categorySlug,categories.status as categoryStatus')
                 ->join('categories', 'categories.id', '=', 'shows.category_id', 'inner')->
                 where('categories.status', '=', '1')->where('shows.status', '=', '1')->where('shows.title', 'LIKE', "$q%")->orderby('shows.id', 'asc')->get();
@@ -126,7 +162,6 @@ class Home extends Controller
         return view('pages.search', compact('title', 'productList', 'checkSalesToday', 'checkSalesDateRange'));
     }
 
-
     public function newShows(Request $request)
     {
         $title = "New Shows";
@@ -135,6 +170,16 @@ class Home extends Controller
         $checkSalesToday = Sale::where('type', '1')->whereDate('sale_date', $currentDate)->first();
         $checkSalesDateRange = Sale::where('type', '2')->whereDate('start_date', '<=', $currentDate)
             ->whereDate('end_date', '>=', $currentDate)->first();
+
+        $productListPopular = DB::table('shows')
+            ->join('order_has_items', 'shows.id', '=', 'order_has_items.item_id', 'inner')
+            ->join('categories', 'categories.id', '=', 'shows.category_id', 'inner')
+            ->selectRaw('shows.*,categories.name as categoryName,categories.slug as categorySlug,categories.status as categoryStatus,sum(order_has_items.quantity) total,order_has_items.item_id,order_has_items.product_type')
+            ->where('order_has_items.product_type', '=', '1')
+            ->groupBy('shows.id')
+            ->orderBy('total', 'desc')
+            ->take(3)
+            ->get();
 
         if ($filter) {
             $productList = Shows::selectRaw('shows.*,categories.name as categoryName,categories.slug as categorySlug,categories.status as categoryStatus')
@@ -147,7 +192,7 @@ class Home extends Controller
                 where('categories.status', '=', '1')->where('shows.status', '=', '1')->orderby('shows.id', 'desc')->get();
         }
 
-        return view('pages.new-shows', compact('title', 'productList', 'checkSalesToday', 'checkSalesDateRange'));
+        return view('pages.new-shows', compact('title', 'productList', 'productListPopular', 'checkSalesToday', 'checkSalesDateRange'));
     }
     public function showByCategory(Request $request)
     {
@@ -157,6 +202,16 @@ class Home extends Controller
         $checkSalesToday = Sale::where('type', '1')->whereDate('sale_date', $currentDate)->first();
         $checkSalesDateRange = Sale::where('type', '2')->whereDate('start_date', '<=', $currentDate)
             ->whereDate('end_date', '>=', $currentDate)->first();
+        $productListPopular = DB::table('shows')
+            ->join('order_has_items', 'shows.id', '=', 'order_has_items.item_id', 'inner')
+            ->join('categories', 'categories.id', '=', 'shows.category_id', 'inner')
+            ->selectRaw('shows.*,categories.name as categoryName,categories.slug as categorySlug,categories.status as categoryStatus,sum(order_has_items.quantity) total,order_has_items.item_id,order_has_items.product_type')
+            ->where('categories.slug', '=', $request->slug)
+            ->where('order_has_items.product_type', '=', '1')
+            ->groupBy('shows.id')
+            ->orderBy('total', 'desc')
+            ->take(3)
+            ->get();
 
         if ($filter) {
             $productList = Shows::selectRaw('shows.*,categories.name as categoryName,categories.slug as categorySlug,categories.status as categoryStatus')
@@ -169,7 +224,7 @@ class Home extends Controller
                 where('categories.slug', '=', $request->slug)->where('categories.status', '=', '1')->where('shows.status', '=', '1')->orderby('shows.id', 'asc')->get();
 
         }
-        return view('pages.shows-by-category', compact('title', 'productList', 'checkSalesToday', 'checkSalesDateRange'));
+        return view('pages.shows-by-category', compact('title', 'productList', 'productListPopular', 'checkSalesToday', 'checkSalesDateRange'));
     }
 
     public function showByYear(Request $request)
@@ -197,12 +252,17 @@ class Home extends Controller
 
     public function showDetails(Request $request, $id)
     {
+        $currentDate = date('Y-m-d');
+        $checkSalesToday = Sale::where('type', '1')->whereDate('sale_date', $currentDate)->first();
+        $checkSalesDateRange = Sale::where('type', '2')->whereDate('start_date', '<=', $currentDate)
+            ->whereDate('end_date', '>=', $currentDate)->first();
+
         $productViewList = Shows::selectRaw('shows.*,categories.name as categoryName,categories.slug as categorySlug,categories.status as categoryStatus')
             ->join('categories', 'categories.id', '=', 'shows.category_id', 'inner')->
             where('shows.id', '=', $id)->first();
         //dd($productViewList);
         $title = "Show-Details";
-        return view('pages.show-details', compact('title', 'productViewList'));
+        return view('pages.show-details', compact('title', 'productViewList', 'checkSalesToday', 'checkSalesDateRange'));
 
     }
 
@@ -713,15 +773,21 @@ $show_name = $show->title . '(' . $show->no_of_mp3_cds . ' ' . 'Mp3 Cd' . ')'; *
 
         //$oldCart = Session::has('cart') ? Session::get('cart') : null;
         $cart = session()->get('cart');
-        $cart[$id] = [
-            "id" => $show->id,
-            "name" => $show_name,
-            "quantity" => 1,
-            "price" => $price,
-            "discount" => $discount,
-            'type' => $type,
-            "image" => $show->image,
-        ];
+        //dd($cart);
+        //dd($cart[$id]["quantity"]) ;
+        $cart[$id]["price"] = $price;
+        $cart[$id]["discount"] = $discount;
+        $cart[$id]["type"] = $type;
+
+        /* $cart[$id] = [
+        "id" => $show->id,
+        "name" => $show_name,
+        "quantity" => 1,
+        "price" => $price,
+        "discount" => $discount,
+        'type' => $type,
+        "image" => $show->image,
+        ]; */
 
         //$cart[$id]["type"] = $type;
         //dd($cart);
@@ -1334,23 +1400,74 @@ $show_name = $show->title . '(' . $show->no_of_mp3_cds . ' ' . 'Mp3 Cd' . ')'; *
         if ($request->ajax()) {
             //dd($request->all());
             if ($request->id && $request->quantity) {
-         
-                    $cart = session()->get('cart');
-                    $cart[$request->id]["quantity"] = $request->quantity;
-                    session()->put('cart', $cart);
-                    session()->get('cart', []);
 
-                    return response()->json([
-                        'status' => true,
-                        'message' => 'Quantity Updated Successfully!',
-                        'redirect' => 'cart',
-                    ]);
+                $cart = session()->get('cart');
+                $cart[$request->id]["quantity"] = $request->quantity;
+                session()->put('cart', $cart);
+                session()->get('cart', []);
+
+                return response()->json([
+                    'status' => true,
+                    'message' => 'Quantity Updated Successfully!',
+                    'redirect' => 'cart',
+                ]);
 
             }
         } else {
             abort(403);
         }
 
+    }
+
+    public function removeFromWishlist(Request $request)
+    {
+        if ($request->ajax()):
+            $id = $request->id;
+
+            //dd($request->all());
+            if (auth()->user()):
+                $isWishlistsDeleted = auth()->user()->wishlists()->where('item_id', $id)->delete();
+                if ($isWishlistsDeleted):
+                    return response()->json([
+                        'status' => true,
+                        'message' => 'Product removed from wishlist successfully !!',
+                        'redirect' => 'my-wishlist',
+                    ]);
+
+                else:
+                    return response()->json([
+                        'status' => false,
+                        'message' => 'Something went wrong  !!',
+                        'redirect' => '',
+                    ]);
+
+                endif;
+            endif;
+
+        endif;
+
+    }
+
+    public function aboutUs(Request $request)
+    {
+        $title = "About Us";
+        $cmsList = Cms::where('slug','=','about-us')->where('status','=','1')->first();
+        //dd($cmsList);
+        return view('pages.about-us',compact('title', 'cmsList'));
+    }
+    public function termsConditions(Request $request)
+    {
+        $title = "Terms & Conditions";
+        $cmsList = Cms::where('slug','=','terms-conditions')->where('status','=','1')->first();
+        //dd($cmsList);
+        return view('pages.about-us',compact('title', 'cmsList'));
+    }
+    public function privacyPolicy(Request $request)
+    {
+        $title = "Privacy Policy";
+        $cmsList = Cms::where('slug','=','privacy-policy')->where('status','=','1')->first();
+        //dd($cmsList);
+        return view('pages.about-us',compact('title', 'cmsList'));
     }
 
 }

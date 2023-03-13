@@ -598,6 +598,89 @@ $(document).on('click', '.removeFromCart', function (e) {
 
 /* add to wishlist */
 
+$(document).on('click', '.wishlistRemove', function (e) {
+    e.preventDefault();
+    var id = $(this).data('id');
+    alert(id);
+    //var product_type = $(this).data('ptype');
+    //alert(product_type);
+    //var type = $('.cd').val();
+    var dataJSON = {
+        id: id,
+        _token: _token
+    };
+    /* $.confirm({
+        icon: 'fa fa-spinner fa-spin',
+        title: 'Confirm!',
+        content: 'Do you really want to do this ?',
+        type: 'orange',
+        typeAnimated: true,
+        buttons: { */
+    /* confirm: function () { */
+
+    if (id) {
+        $.ajax({
+            type: "POST",
+            url: baseUrl + "remove-from-wishlist",
+            data: dataJSON,
+            dataType: "JSON",
+            beforeSend: function () {
+                jc = $.dialog({
+                    icon: 'fa fa-spinner fa-spin',
+                    title: 'Working!',
+                    content: 'Sit back, we are processing your request!',
+                    type: 'dark',
+                    closeIcon: false
+
+                });
+            },
+            success: function (data) {
+                jc.close();
+                // console.log(data);
+                if (data.status) {
+
+                    $.alert({
+                        icon: 'fa fa-check',
+                        title: 'Success!',
+                        content: data.message,
+                        type: 'green',
+                        typeAnimated: true,
+                    });
+                    if (data.redirect != '') {
+                        setTimeout(function () { window.location.href = baseUrl + data.redirect }, 2000);
+
+                    }
+                } else {
+
+                    $.alert({
+                        icon: 'fa fa-warning',
+                        title: 'Warning!',
+                        content: data.message,
+                        type: 'orange',
+                        typeAnimated: true,
+                    });
+                }
+
+
+            }
+        });
+
+    } 
+
+    /* },
+    /* cancel: function () {
+        $.alert({
+            icon: 'fa fa-times',
+            title: 'Canceled!',
+            content: 'Process canceled',
+            type: 'purple',
+            typeAnimated: true,
+        });
+    } */
+    /* } */
+    /* }); */
+
+})
 
 $(document).on('click', '.addToWishlist', function () {
     //alert('Test');

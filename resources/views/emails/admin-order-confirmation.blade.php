@@ -18,13 +18,14 @@
             </tr>
             <tr>
                 <td style="padding:20px;">
-                   <p>Dear {{$userName}},</p>
+                   <p>Hello Admin,</p>
                    <br>
                    <p>
-                    Welcome to <b>{{env('APP_NAME')}}</b><br/><br/>
-                    Your Profile Created Successfully,after login please change your credentials.<br>
-                     <b>Email:{{$email}}</b><br>
-                     <b>Password:{{$password}}</b>
+                    New Order has been placed on <b>{{env('APP_NAME')}}</b> .<br><br>
+                     <b>Order Number : {{$order_no}}</b><br>
+                     <b>Order Total : ${{$all_total}}</b><br><br>
+                     <b>Customer Name : {{$userName}}</b><br>
+                     <b>Customer Email : {{$user_email}}</b>
                    </p>
 				    <br><br>
 				    <p>Thank you,</p>

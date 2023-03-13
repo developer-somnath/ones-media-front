@@ -17,6 +17,8 @@ use Illuminate\Support\Facades\DB;
 use ZipArchive;
 use App\Models\Transaction;
 use App\Models\TransactionLog;
+use App\Mail\Mailer;
+use Mail;
 
 class OrderController extends Controller
 {
@@ -286,6 +288,26 @@ class OrderController extends Controller
                             ]);
                             auth()->user()->carts()->delete();
                             $request->session()->forget('shiipingAddress');
+                            $admin = User::where('user_type','=','1')->first();
+                            $mailDetails = [
+                                'email' => auth()->user()->email,
+                                'subject' => 'Order Confirmation',
+                                'html' => 'emails.order-confirmation',
+                                'userName' => auth()->user()->first_name . ' ' . auth()->user()->last_name,
+                                'order_no' => $orderAltId,
+                                'all_total' => $order->oder_amount,
+                            ];
+                            Mail::to(auth()->user()->email)->send(new Mailer($mailDetails));
+                            $adminmailDetails = [
+                                'user_email' => auth()->user()->email,
+                                'admin_email' => $admin->email,
+                                'subject' => 'Admin Received a order confirmation mail',
+                                'html' => 'emails.admin-order-confirmation',
+                                'userName' => auth()->user()->first_name . ' ' . auth()->user()->last_name,
+                                'order_no' => $orderAltId,
+                                'all_total' => $order->oder_amount,
+                            ];
+                            Mail::to($admin->email)->send(new Mailer($adminmailDetails));
                             // return response()->json([
                             //     'status' => true,
                             //     'message' => 'Payment Received Successfully !!',

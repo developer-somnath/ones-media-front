@@ -20,7 +20,7 @@
                     <h2>Most Popular Shows</h2>
                 </div>
                 <div class="row">
-                    @forelse ($productList as $product)
+                    @forelse ($productListPopular as $product)
                         <div class="col-md-4">
                             <div class="popular-box">
                                 <a href="{{ url('show/details/' . $product->id) }}">
