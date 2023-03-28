@@ -173,8 +173,8 @@
                                                 $shipping = $shippingPrice->price_for_more_than_three_or_equal;
                                             endif;
                                         @endphp
-                                        <h6><b>Shipping Charges</b> : ${{ $shipping }} </h6>
-                                        <h4><strong>Total ${{ $total + $shipping }}</strong></h4>
+                                        {{-- <h6><b>Shipping Charges</b> : ${{ $shipping }} </h6> --}}
+                                        <h4><strong>Total ${{ $total  }}</strong></h4>
                                     </td>
                                 </tr>
                                 <tr>
@@ -183,7 +183,7 @@
                                                 class="fa fa-angle-left"></i>
                                             Continue Shopping</a>
                                         @auth
-                                            <a href="{{ url('/sample-file') }}" class="btn btn-success">
+                                            <a href="{{ url('/order-address') }}" class="btn btn-success">
                                                 Checkout</a>
                                         @endauth
                                         @guest

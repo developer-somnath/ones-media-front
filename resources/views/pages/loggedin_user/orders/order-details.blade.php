@@ -98,11 +98,11 @@
                                     <div class="col-lg-6">
                                         <h3 class="h6">Billing address</h3>
                                         <address>
-                                            <strong>{{ @$details->user->first_name . ' ' . @$details->user->last_name }}</strong><br>
-                                            {{ @$details->user->street_address }}<br>{{ @$details->user->address_line_2 }}<br>{{ @$details->user->city }},
-                                            {{ @$details->user->state->name }}, {{ @$details->user->country->name }},
-                                            {{ @$details->user->zip_code }} <br><abbr title="Phone">Phone:</abbr>
-                                            {{ @$details->user->phone }}
+                                            <strong>{{ @$details->address->where('type','B')->first()->first_name . ' ' . @$details->address->where('type','B')->first()->last_name }}</strong><br>
+                                            {{ @$details->address->where('type','B')->first()->street_address }}<br>{{ @$details->address->where('type','B')->first()->address_line_2 }}<br>{{ @$details->address->where('type','B')->first()->city }},
+                                            {{ @$details->address->where('type','B')->first()->state->name }}, {{ @$details->address->where('type','B')->first()->country->name }},
+                                            {{ @$details->address->where('type','B')->first()->zip_code }} <br><abbr title="Phone">Phone:</abbr>
+                                            {{ @$details->address->where('type','B')->first()->phone }}
                                         </address>
                                     </div>
                                 </div>
@@ -117,11 +117,12 @@
                                 <hr>
                                 <h3 class="h6">Address</h3>
                                 <address>
-                                    <strong>{{ @$details->address->first_name . ' ' . @$details->address->last_name }}</strong><br>
-                                    {{ @$details->address->street_address }}<br>{{ @$details->address->address_line_2 }}<br>{{ @$details->address->city }},
-                                    {{ @$details->address->state->name }}, {{ @$details->address->country->name }},
-                                    {{ @$details->address->zip_code }} <br><abbr title="Phone">Phone:</abbr>
-                                    {{ @$details->user->phone }}
+                                    <strong>{{ @$details->address->where('type','S')->first()->first_name . ' ' . @$details->address->where('type','S')->first()->last_name }}</strong><br>
+                                    {{ @$details->address->where('type','S')->first()->street_address }}<br>{{ @$details->address->where('type','S')->first()->address_line_2 }}<br>{{ @$details->address->where('type','S')->first()->city }},
+                                    {{ @$details->address->where('type','S')->first()->state->name }}, {{ @$details->address->where('type','S')->first()->country->name }},
+                                    {{ @$details->address->where('type','S')->first()->zip_code }} <br><abbr title="Phone">Phone:</abbr>
+                                    {{ @$details->address->where('type','S')->first()->phone }}
+</li
                                 </address>
                             </div>
                         </div>

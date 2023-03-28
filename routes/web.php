@@ -26,6 +26,7 @@ Route::get('/new-shows', [Home::class, 'newShows'])->name('new.shows');
 Route::get('/show-by-category/{slug?}', [Home::class, 'showByCategory'])->name('show.by.category');
 Route::get('/show-by-year/{year?}', [Home::class, 'showByYear'])->name('show.by.Year');
 Route::match(['get', 'post'], 'show/details/{id}', [Home::class, 'showDetails'])->name('show.details');
+Route::match(['get', 'post'], '/post-review', [Home::class, 'postReview'])->name('post-review');
 Route::get('/cart', [Home::class, 'cart'])->name('cart');
 Route::post('/add-to-cart', [Home::class, 'addToCart'])->name('add.to.cart');
 Route::match(['get', 'post'], '/update-cart-quantity', [Home::class, 'updateCartQuantity'])->name('update-cart-quantity');
@@ -35,7 +36,7 @@ Route::post('/filter-by-cart', [Home::class, 'filterByCart'])->name('filter.by.c
 Route::get('/about-us', [Home::class, 'aboutUs'])->name('about-us');
 Route::get('/terms-conditions', [Home::class, 'termsConditions'])->name('terms-conditions');
 Route::get('/privacy-policy', [Home::class, 'privacyPolicy'])->name('privacy-policy');
-
+Route::get('/faqs', [Home::class, 'faqList'])->name('faqs');
 Route::get('login', [Authentication::class, 'login'])->name('login');
 Route::match(['get', 'post'],'register', [Authentication::class, 'register'])->name('signup');
 Route::match(['get', 'post'],'user-check', [Authentication::class, 'userCheck'])->name('user-check');
@@ -68,6 +69,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/payment-record', [OrderController::class, 'orderCreate'])->name('create-stripe-order');
     Route::get('/order-summery/{id}', [OrderController::class, 'summery'])->name('order-summery');
     
+    Route::get('/order-address', [OrderController::class, 'orderAddress'])->name('order-address');
     Route::get('/sample-file', [Home::class, 'sampleFile'])->name('sample-file');
 
 });

@@ -52,7 +52,7 @@ class Dashboard extends Controller
         endif;
 
         $title = "My Account";
-        $countryList = Countries::whereIn('id', ['231', '4', '89', '177', '232', '240'])->get();
+        $countryList = Countries::whereIn('id', ['231', '4', '89', '177', '232', '240','38'])->get();
         return view('pages.loggedin_user.my-account', compact('title', 'countryList'));
     }
     public function changePassword(Request $request)

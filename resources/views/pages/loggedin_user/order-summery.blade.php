@@ -13,11 +13,19 @@
         </li>
         <li>
             <h3>Billing Address</h3>
-            <strong>{{ @$info->user->first_name . ' ' . @$info->user->last_name }}</strong><br>
-                                            {{ @$info->user->street_address }}<br>{{ @$info->user->address_line_2 }}<br>{{ @$info->user->city }},
-                                            {{ @$info->user->state->name }}, {{ @$info->user->country->name }},
-                                            {{ @$info->user->zip_code }} <br><abbr title="Phone">Phone:</abbr>
-                                            {{ @$info->user->phone }}
+            <strong>{{ @$info->address->where('type','B')->first()->first_name . ' ' . @$info->address->where('type','B')->first()->last_name }}</strong><br>
+                                            {{ @$info->address->where('type','B')->first()->street_address }}<br>{{ @$info->address->where('type','B')->first()->address_line_2 }}<br>{{ @$info->address->where('type','B')->first()->city }},
+                                            {{ @$info->address->where('type','B')->first()->state->name }}, {{ @$info->address->where('type','B')->first()->country->name }},
+                                            {{ @$info->address->where('type','B')->first()->zip_code }} <br><abbr title="Phone">Phone:</abbr>
+                                            {{ @$info->address->where('type','B')->first()->phone }}
+        </li>
+        <li>
+            <h3>Shipping Address</h3>
+            <strong>{{ @$info->address->where('type','S')->first()->first_name . ' ' . @$info->address->where('type','S')->first()->last_name }}</strong><br>
+                                            {{ @$info->address->where('type','S')->first()->street_address }}<br>{{ @$info->address->where('type','S')->first()->address_line_2 }}<br>{{ @$info->address->where('type','S')->first()->city }},
+                                            {{ @$info->address->where('type','S')->first()->state->name }}, {{ @$info->address->where('type','S')->first()->country->name }},
+                                            {{ @$info->address->where('type','S')->first()->zip_code }} <br><abbr title="Phone">Phone:</abbr>
+                                            {{ @$info->address->where('type','S')->first()->phone }}
         </li>
     </ul>
     @forelse ($info->items as $value)

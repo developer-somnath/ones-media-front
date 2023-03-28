@@ -21,6 +21,7 @@ class OrderAddress extends Model
         'city',
         'country_id',
         'state_id',
+        'type'
     ];
 
     public function order()

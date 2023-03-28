@@ -127,7 +127,7 @@
                                     <li><a href="#">2011</a></li>  --}}
                                 </ul>
                             </li>
-                            <li><a href="#">faq </a></li>
+                            <li><a href="{{ url('/faqs') }}">faq </a></li>
                             <li><a href="">Know More</a></li>
                             <li><a href="">onesmedia.com</a></li>
                             <li>
@@ -207,7 +207,7 @@
                                     <a href="{{ url('/shows-all') }}">Shop</a>
                                 </li>
                                 <li>
-                                    <a href="#">FAQ</a>
+                                    <a href="{{ url('/faqs') }}">FAQ</a>
                                 </li>
                                 <li>
                                     <a href="#">Contact Us</a>

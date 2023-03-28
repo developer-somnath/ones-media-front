@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use App\Http\Controllers\Sale;
 use Session;
 use App\Mail\Mailer;
 use Mail;
@@ -20,7 +21,7 @@ class Authentication extends Controller
             return redirect('my-account');
         endif;
         $title = "Signup - Login";
-        $countryList = Countries::whereIn('id', ['231', '4', '89', '177', '232', '240'])->get();
+        $countryList = Countries::whereIn('id', ['231', '4', '89', '177', '232', '240','38'])->get();
         return view('pages.login', compact('title', 'countryList'));
     }
 
@@ -205,9 +206,14 @@ class Authentication extends Controller
     public function myWishlist()
     {
         $title = "My-Wishlist";
+        $currentDate = date('Y-m-d');
         $wishlists = auth()->user()->wishlists;
+        $checkSalesToday = Sale::where('type', '1')->whereDate('sale_date', $currentDate)->first();
+        $checkSalesDateRange = Sale::where('type', '2')->whereDate('start_date', '<=', $currentDate)
+            ->whereDate('end_date', '>=', $currentDate)->first();
+
         //dd($wishlists);
-        return view('pages.loggedin_user.my-wishlist', compact('title', 'wishlists'));
+        return view('pages.loggedin_user.my-wishlist', compact('title', 'wishlists', 'checkSalesToday', 'checkSalesDateRange'));
 
     }
 

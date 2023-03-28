@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use DB;
 use App\Models\Cms;
+use App\Models\Faq;
 use App\Models\Cart;
 use App\Models\Sale;
 use App\Models\Shows;
@@ -13,6 +14,7 @@ use App\Models\Categories;
 use App\Models\SampleFiles;
 use App\Models\FreeDownload;
 use Illuminate\Http\Request;
+use App\Models\Review;
 //use Illuminate\Support\Facades\DB;
 use App\Models\OfferManagement;
 use Illuminate\Support\Facades\Auth;
@@ -253,6 +255,13 @@ class Home extends Controller
     public function showDetails(Request $request, $id)
     {
         $currentDate = date('Y-m-d');
+        $yesterday = date('Y-m-d', strtotime("-1 days"));
+        $twodaysAgo = date('Y-m-d', strtotime("-2 days"));
+
+        $todayFreeDownloadList = FreeDownload::whereDate('download_date', $currentDate)->where('status', '=', '1')->get();
+        $yesterdayFreeDownloadList = FreeDownload::whereDate('download_date', $yesterday)->where('status', '=', '1')->get();
+        $twodaysAgoFreeDownloadList = FreeDownload::whereDate('download_date', $twodaysAgo)->where('status', '=', '1')->get();
+
         $checkSalesToday = Sale::where('type', '1')->whereDate('sale_date', $currentDate)->first();
         $checkSalesDateRange = Sale::where('type', '2')->whereDate('start_date', '<=', $currentDate)
             ->whereDate('end_date', '>=', $currentDate)->first();
@@ -260,12 +269,16 @@ class Home extends Controller
         $productViewList = Shows::selectRaw('shows.*,categories.name as categoryName,categories.slug as categorySlug,categories.status as categoryStatus')
             ->join('categories', 'categories.id', '=', 'shows.category_id', 'inner')->
             where('shows.id', '=', $id)->first();
-        //dd($productViewList);
+        $productReviewList = Review::selectRaw('reviews.*')->where('show_id','=',$id)
+            /* ->where('is_approved','=','1') */->where('status','!=','3')->get();
+        $reviewrating = Review::selectRaw('AVG(rating) as ratings_average')->where('show_id', $id)->first();
+        //dd($reviewrating);
+        
+        //dd($productReviewList);
         $title = "Show-Details";
-        return view('pages.show-details', compact('title', 'productViewList', 'checkSalesToday', 'checkSalesDateRange'));
+        return view('pages.show-details', compact('title', 'productViewList','productReviewList', 'todayFreeDownloadList', 'yesterdayFreeDownloadList', 'twodaysAgoFreeDownloadList', 'checkSalesToday', 'checkSalesDateRange','reviewrating'));
 
     }
-
     public function cart(Request $request)
     {
         $title = "Cart";
@@ -1469,5 +1482,58 @@ $show_name = $show->title . '(' . $show->no_of_mp3_cds . ' ' . 'Mp3 Cd' . ')'; *
         //dd($cmsList);
         return view('pages.about-us',compact('title', 'cmsList'));
     }
+    public function postReview(Request $request)
+    {
+        if ($request->ajax()):
+            //dd($request->input('show_id'));
+            $validated = $request->validate([
+                'name' => 'required|max:255|regex:/^[a-zA-ZÑñ\s]+$/',
+                'email' => 'required|email',
+                'description' => 'required',
+                'rating' => 'required',
+            ]);
+            if ($validated):
 
+                if (Review::where('email', '=', $request->input('email'))->where('status', '!=', 3)->exists()):
+                    return response()->json([
+                        'status' => false,
+                        'message' => 'Email already exists!',
+                        'redirect' => '',
+                    ]);
+                endif;
+
+                Review::create([
+                    "show_id" => $request->input('show_id'),
+                    "name" => $request->input('name'),
+                    "email" => $request->input('email'),
+                    "rating" => $request->input('rating'),
+                    "description" => $request->input('description')
+
+                ]);
+               
+
+                return response()->json([
+                    'status' => true,
+                    'message' => 'Review Posted Successfully!',
+                    'redirect' => 'show/details/'.$request->input('show_id')
+                ]);
+
+            else:
+                return response()->json([
+                    'status' => false,
+                    'message' => 'All data are not present in the request!',
+                    'redirect' => '',
+                ]);
+            endif;
+        endif;
+
+    }
+
+    public function faqList(Request $request)
+    {
+        $title = "FAQ";
+        $faqList = Faq::where('status', '=', '1')->get();
+       // dd($faqList);
+        return view('pages.faqs', compact('title', 'faqList'));
+    }
 }

@@ -33,8 +33,18 @@
                         <tbody>
                             {{--   @forelse ($productList as $product)  --}}
                             @php
+                                $shippingAndBillingAddress = Request::session()->get('shippingBillingAddress');
+                                $countryShortCode = \App\Models\Countries::where('id',$shippingAndBillingAddress['shipping_country_id'])->pluck('short_code')->first();
+                                $costCountry = "OTHER";
+                                if($countryShortCode==='US'){
+                                    $costCountry = "US";
+                                }
+                                if($countryShortCode==='CA'){
+                                    $costCountry = "CANADA";
+                                }
                                 $shippingPrice = DB::table('shipping_costs')
                                     ->where('id', '=', 1)
+                                    ->where('country', '=', $costCountry)
                                     ->first();
                                 $total = 0;
                                 $quantity = 0;
@@ -131,13 +141,17 @@
                                         endif;
                                     @endphp
                                     <h6><b>Shipping Charges</b> : ${{ $shipping }} </h6>
-                                    <h4><strong>Total ${{ $total + $shipping }}</strong></h4>
+                                    <h4><strong>Total ${{ number_format(($total + $shipping), 2) }}</strong></h4>
                                 </td>
                             </tr>
 
                         </tfoot>
                     </table>
 
+                </div>
+                <div class="text-right">
+                    <a href="{{ url('/payment') }}" class="btn btn-success">
+                                                Proceed to Payment</a>
                 </div>
                 {{--   <div class="custom-pagination mt-3">
                     <nav aria-label="Page navigation example">
@@ -155,113 +169,7 @@
                     </nav>
                 </div>  --}}
             </div><br>
-            <div class="row">
-                <form class="userFrm" data-action="place-order" method="post" data-validation="requiredCheck">
-                    @csrf
-                    <div class="col-md-6">
-                        {{--  <div class="login-form">  --}}
-                        <h4>Shipping Address</h4>
-
-                        <div class="row align-items-center">
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label>First Name <sup>*</sup></label>
-                                    <input type="text" placeholder="First Name" class="form-control requiredCheck"
-                                        id="billing_first_name" name="billing_first_name" data-check="First Name"
-                                        value="{{ auth()->user()->first_name }}">
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label>Last Name <sup>*</sup></label>
-                                    <input type="text" placeholder="Last Name" class="form-control requiredCheck"
-                                        id="billing_last_name" name="billing_last_name" data-check="Last Name"
-                                        value="{{ auth()->user()->last_name }}">
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label>Email <sup>*</sup></label>
-                                    <input type="email" placeholder="Email" class="form-control requiredCheck"
-                                        id="billing_email" name="billing_email" data-check="Email"
-                                        value="{{ auth()->user()->email }}">
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label>Phone <sup>*</sup></label>
-                                    <input type="number" placeholder="Phone No" class="form-control requiredCheck"
-                                        id="billing_phone" name="billing_phone" data-check="Phone Number"
-                                        value="{{ auth()->user()->phone }}">
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label>Street Address<sup>*</sup></label>
-                                    <input type="text" placeholder="Street Address" class="form-control requiredCheck"
-                                        id="street_address" name="street_address" data-check="Street Address"
-                                        value="{{ auth()->user()->street_address }}">
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label>Address Line 2 <sup>*</sup></label>
-                                    <input type="text" placeholder="Address Line 2" class="form-control requiredCheck"
-                                        id="billing_address_line_2" name="billing_address_line_2"
-                                        data-check="Address Line 2">
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label>Country <sup>*</sup></label>
-                                    <select class="form-control requiredCheck" id="country_id" name="country_id"
-                                        data-check="Country">
-                                        <option value="">-Select Country-</option>
-                                        @if (count($countryList) > 0):
-                                            @foreach ($countryList as $value)
-                                                <option value="{{ $value->id }}"
-                                                    {{ !is_null(Auth::user()) && Auth::user()->country_id == $value->id ? 'selected' : '' }}>
-                                                    {{ $value->name }}</option>
-                                            @endforeach;
-                                        @endif
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label>State <sup>*</sup></label>
-                                    <select class="form-control requiredCheck" id="state_id" name="state_id"
-                                        data-check="State">
-                                        <option value="">-Select State-</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label>City <sup>*</sup></label>
-                                    <input name="city" id="city" placeholder="Enter City" type="text"
-                                        class="form-control requiredCheck" data-check="City"
-                                        value="{{ auth()->user()->city }}">
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label>Zip Code <sup>*</sup></label>
-                                    <input type="text" placeholder="Zip" class="form-control requiredCheck"
-                                        id="zip_code" name="zip_code" data-check="Zip Code"
-                                        value="{{ auth()->user()->zip_code }}">
-                                </div>
-                            </div>
-
-                        </div>
-                        {{--  </div>  --}}
-                    </div><br>
-
-                    <div class="col-md-6">
-                        <input type="submit" value="Place Order" class="submit-btn">
-                    </div>
-                </form>
-            </div>
+            
         </div>
 
 

@@ -46,7 +46,7 @@ class OrderController extends Controller
             /*
              */
             //dd($carts);
-            $countryList = Countries::whereIn('id', ['231', '4', '89', '177', '232', '240'])->get();
+            $countryList = Countries::whereIn('id', ['231', '4', '89', '177', '232', '240','38'])->get();
             return view('pages.loggedin_user.checkout', compact('title', 'carts', 'countryList'));
 
         endif;
@@ -61,19 +61,29 @@ class OrderController extends Controller
                 'billing_last_name' => 'required|max:255|regex:/^[a-zA-ZÑñ\s]+$/',
                 'billing_email' => 'required|email',
                 'billing_phone' => 'required',
-                'street_address' => 'required',
+                'billing_street_address' => 'required',
                 'billing_address_line_2' => 'required',
-                "country_id" => "required",
-                "state_id" => "required",
-                "city" => "required",
-                "zip_code" => "required",
+                "billing_country_id" => "required",
+                "billing_state_id" => "required",
+                "billing_city" => "required",
+                "billing_zip_code" => "required",
+                'shipping_first_name' => 'required|max:255|regex:/^[a-zA-ZÑñ\s]+$/',
+                'shipping_last_name' => 'required|max:255|regex:/^[a-zA-ZÑñ\s]+$/',
+                'shipping_email' => 'required|email',
+                'shipping_phone' => 'required',
+                'shipping_street_address' => 'required',
+                'shipping_address_line_2' => 'required',
+                "shipping_country_id" => "required",
+                "shipping_state_id" => "required",
+                "shipping_city" => "required",
+                "shipping_zip_code" => "required",
             ]);
             if ($validated):
-                $request->session()->put('shiipingAddress', $request->input());
+                $request->session()->put('shippingBillingAddress', $request->input());
                 return response()->json([
                     'status' => true,
-                    'message' => 'Redirecting to Payment....',
-                    'redirect' => 'payment',
+                    'message' => 'Address Saved for this order!',
+                    'redirect' => 'sample-file',
                 ]);
             else:
                 return response()->json([
@@ -95,18 +105,18 @@ class OrderController extends Controller
     {
         
         \Stripe\Stripe::setApiKey(env('STRIPE_SK'));
-        $shippingData = $request->session()->get('shiipingAddress');
+        $shippingData = $request->session()->get('shippingBillingAddress');
         $paymentIntent = \Stripe\PaymentIntent::create([
-            'amount' => ((float)$this->orderAmount()*100),
+            'amount' => ((float)$this->orderAmount($shippingData)*100),
             'currency' => 'USD',
             'shipping' => [
-                'name' => $shippingData['billing_first_name'].' '.$shippingData['billing_last_name'],
+                'name' => $shippingData['shipping_first_name'].' '.$shippingData['shipping_last_name'],
                 'address' => [
-                  'line1' => $shippingData['street_address'],
-                  'postal_code' => $shippingData['zip_code'],
-                  'city' => $shippingData['city'],
-                  'state' => States::where('id',$shippingData['state_id'])->pluck('name')->first(),
-                  'country' => Countries::where('id',$shippingData['country_id'])->pluck('short_code')->first(),
+                  'line1' => $shippingData['shipping_street_address'],
+                  'postal_code' => $shippingData['shipping_zip_code'],
+                  'city' => $shippingData['shipping_city'],
+                  'state' => States::where('id',$shippingData['shipping_state_id'])->pluck('name')->first(),
+                  'country' => Countries::where('id',$shippingData['shipping_country_id'])->pluck('short_code')->first(),
                 ]
             ],
             'automatic_payment_methods' => [
@@ -123,10 +133,19 @@ class OrderController extends Controller
                         ]);
         
     }
-    private function orderAmount(){
+    private function orderAmount($shippingBillingAddress){
+        $countryShortCode = Countries::where('id',$shippingBillingAddress['shipping_country_id'])->pluck('short_code')->first();
+        $costCountry = "OTHER";
+        if($countryShortCode==='US'){
+            $costCountry = "US";
+        }
+        if($countryShortCode==='CA'){
+            $costCountry = "CANADA";
+        }
         $shippingPrice = DB::table('shipping_costs')
-        ->where('id', '=', 1)
-        ->first();
+            ->where('id', '=', 1)
+            ->where('country', '=', $costCountry)
+            ->first();
         $carts = Cart::item()->where('user_id', auth()->user()->id)->get();
         //dd($carts);
         $total = 0;
@@ -162,9 +181,19 @@ class OrderController extends Controller
     public function orderCreate(Request $request)
     {
         // dd($request->all());
-        $shippingPrice = DB::table('shipping_costs')
-                    ->where('id', '=', 1)
-                    ->first();
+            $shippingBillingAddress = $request->session()->get('shippingBillingAddress');
+            $countryShortCode = Countries::where('id',$shippingBillingAddress['shipping_country_id'])->pluck('short_code')->first();
+            $costCountry = "OTHER";
+            if($countryShortCode==='US'){
+                $costCountry = "US";
+            }
+            if($countryShortCode==='CA'){
+                $costCountry = "CANADA";
+            }
+            $shippingPrice = DB::table('shipping_costs')
+                ->where('id', '=', 1)
+                ->where('country', '=', $costCountry)
+                ->first();
                 $orderCount = Order::select('id')->count();
                 $orderAltId = 1;
                 if ($orderCount > 0):
@@ -271,23 +300,39 @@ class OrderController extends Controller
                                 'order_id' => $order->id,
                                 'order_status' => '1',
                             ]);
-                            $shippingData = $request->session()->get('shiipingAddress');
+                            $shippingData = $request->session()->get('shippingBillingAddress');
                             OrderAddress::create([
                                 'order_id' => $order->id,
                                 "first_name" => $shippingData['billing_first_name'],
                                 "last_name" => $shippingData['billing_last_name'],
                                 "email" => $shippingData['billing_email'],
                                 "phone" => $shippingData['billing_phone'],
-                                "street_address" => $shippingData['street_address'],
+                                "street_address" => $shippingData['billing_street_address'],
                                 "address_line_2" => $shippingData['billing_address_line_2'],
-                                "country_id" => $shippingData['country_id'],
-                                "state_id" => $shippingData['state_id'],
-                                "city" => $shippingData['city'],
-                                "zip_code" => $shippingData['zip_code'],
+                                "country_id" => $shippingData['billing_country_id'],
+                                "state_id" => $shippingData['billing_state_id'],
+                                "city" => $shippingData['billing_city'],
+                                "zip_code" => $shippingData['billing_zip_code'],
+                                "type"=>"B"
+
+                            ]);
+                            OrderAddress::create([
+                                'order_id' => $order->id,
+                                "first_name" => $shippingData['shipping_first_name'],
+                                "last_name" => $shippingData['shipping_last_name'],
+                                "email" => $shippingData['shipping_email'],
+                                "phone" => $shippingData['shipping_phone'],
+                                "street_address" => $shippingData['shipping_street_address'],
+                                "address_line_2" => $shippingData['shipping_address_line_2'],
+                                "country_id" => $shippingData['shipping_country_id'],
+                                "state_id" => $shippingData['shipping_state_id'],
+                                "city" => $shippingData['shipping_city'],
+                                "zip_code" => $shippingData['shipping_zip_code'],
+                                "type"=>"S"
 
                             ]);
                             auth()->user()->carts()->delete();
-                            $request->session()->forget('shiipingAddress');
+                            $request->session()->forget('shippingBillingAddress');
                             $admin = User::where('user_type','=','1')->first();
                             $mailDetails = [
                                 'email' => auth()->user()->email,
@@ -446,4 +491,10 @@ class OrderController extends Controller
         return view('pages.loggedin_user.order-summery', compact('title', 'info'));  
     }
 
+    public function orderAddress()
+    {
+        $title = "Order Address"; 
+        $countryList = Countries::whereIn('id', ['231', '4', '89', '177', '232', '240','38'])->get();
+        return view('pages.loggedin_user.address', compact('title','countryList'));
+    }
 }
