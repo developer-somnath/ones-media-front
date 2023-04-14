@@ -143,7 +143,7 @@ class OrderController extends Controller
             $costCountry = "CANADA";
         }
         $shippingPrice = DB::table('shipping_costs')
-            ->where('id', '=', 1)
+            ->where('status', '=', '1')
             ->where('country', '=', $costCountry)
             ->first();
         $carts = Cart::item()->where('user_id', auth()->user()->id)->get();
@@ -191,7 +191,7 @@ class OrderController extends Controller
                 $costCountry = "CANADA";
             }
             $shippingPrice = DB::table('shipping_costs')
-                ->where('id', '=', 1)
+                ->where('status', '=', '1')
                 ->where('country', '=', $costCountry)
                 ->first();
                 $orderCount = Order::select('id')->count();

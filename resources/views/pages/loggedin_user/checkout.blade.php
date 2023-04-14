@@ -42,8 +42,8 @@
                                 if($countryShortCode==='CA'){
                                     $costCountry = "CANADA";
                                 }
-                                $shippingPrice = DB::table('shipping_costs')
-                                    ->where('id', '=', 1)
+                                $shippingPrice = \DB::table('shipping_costs')
+                                    ->where('status', '=', '1')
                                     ->where('country', '=', $costCountry)
                                     ->first();
                                 $total = 0;
